@@ -1,0 +1,83 @@
+{
+	"name": "ds_csvfile",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "onpremfiles",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"foldername": {
+				"type": "string"
+			},
+			"filename": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "FileServerLocation",
+				"fileName": {
+					"value": "@dataset().filename",
+					"type": "Expression"
+				},
+				"folderPath": {
+					"value": "@dataset().foldername",
+					"type": "Expression"
+				}
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "ORGID",
+				"type": "String"
+			},
+			{
+				"name": "ORGIDSID",
+				"type": "String"
+			},
+			{
+				"name": "ORGNM",
+				"type": "String"
+			},
+			{
+				"name": "ORGDSC",
+				"type": "String"
+			},
+			{
+				"name": "ORGPATHTXT",
+				"type": "String"
+			},
+			{
+				"name": "EFFECTIVEDTM",
+				"type": "String"
+			},
+			{
+				"name": "EXPIRATIONDTM",
+				"type": "String"
+			},
+			{
+				"name": "UPDATEDTM",
+				"type": "String"
+			},
+			{
+				"name": "REPORTTOORGID",
+				"type": "String"
+			},
+			{
+				"name": "REPORT_TO_ORGDSC",
+				"type": "String"
+			},
+			{
+				"name": "REPORT_TO_ORGPATHTXT",
+				"type": "String"
+			}
+		]
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

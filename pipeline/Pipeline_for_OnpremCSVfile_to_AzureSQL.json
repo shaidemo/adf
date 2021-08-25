@@ -1,0 +1,627 @@
+{
+	"name": "Pipeline_for_OnpremCSVfile_to_AzureSQL",
+	"properties": {
+		"activities": [
+			{
+				"name": "Lookup1",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "select Sourceid,\n\t\tsourloca,\n\t\tDestLoca,\n\t\tsFileName,\n\t\tschemaname,\n\t\tdtablename\nfrom etl.metadata",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_azsqlserver",
+						"type": "DatasetReference",
+						"parameters": {
+							"servername": {
+								"value": "@pipeline().globalParameters.servername",
+								"type": "Expression"
+							},
+							"databasename": {
+								"value": "@pipeline().globalParameters.databasename",
+								"type": "Expression"
+							},
+							"username": {
+								"value": "@pipeline().globalParameters.username",
+								"type": "Expression"
+							},
+							"password": {
+								"value": "@pipeline().globalParameters.password",
+								"type": "Expression"
+							}
+						}
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "ForEach1",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Lookup1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Lookup1').output.value",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "If Condition1",
+							"type": "IfCondition",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"expression": {
+									"value": "@equals(item().Sourceid,'sap')",
+									"type": "Expression"
+								},
+								"ifFalseActivities": [
+									{
+										"name": "ehub",
+										"type": "Copy",
+										"dependsOn": [],
+										"policy": {
+											"timeout": "7.00:00:00",
+											"retry": 0,
+											"retryIntervalInSeconds": 30,
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"source": {
+												"type": "DelimitedTextSource",
+												"storeSettings": {
+													"type": "FileServerReadSettings",
+													"recursive": true,
+													"enablePartitionDiscovery": false
+												},
+												"formatSettings": {
+													"type": "DelimitedTextReadSettings"
+												}
+											},
+											"sink": {
+												"type": "AzureSqlSink"
+											},
+											"enableStaging": false,
+											"translator": {
+												"type": "TabularTranslator",
+												"mappings": [
+													{
+														"source": {
+															"name": "ORGID",
+															"type": "String",
+															"physicalType": "String"
+														},
+														"sink": {
+															"name": "ORGID",
+															"type": "String",
+															"physicalType": "nvarchar"
+														}
+													},
+													{
+														"source": {
+															"name": "ORGIDSID",
+															"type": "String",
+															"physicalType": "String"
+														},
+														"sink": {
+															"name": "ORGIDSID",
+															"type": "String",
+															"physicalType": "nvarchar"
+														}
+													},
+													{
+														"source": {
+															"name": "ORGNM",
+															"type": "String",
+															"physicalType": "String"
+														},
+														"sink": {
+															"name": "ORGNM",
+															"type": "String",
+															"physicalType": "nvarchar"
+														}
+													},
+													{
+														"source": {
+															"name": "ORGDSC",
+															"type": "String",
+															"physicalType": "String"
+														},
+														"sink": {
+															"name": "ORGDSC",
+															"type": "String",
+															"physicalType": "nvarchar"
+														}
+													},
+													{
+														"source": {
+															"name": "ORGPATHTXT",
+															"type": "String",
+															"physicalType": "String"
+														},
+														"sink": {
+															"name": "ORGPATHTXT",
+															"type": "String",
+															"physicalType": "nvarchar"
+														}
+													},
+													{
+														"source": {
+															"name": "EFFECTIVEDTM",
+															"type": "String",
+															"physicalType": "String"
+														},
+														"sink": {
+															"name": "EFFECTIVEDTM",
+															"type": "String",
+															"physicalType": "nvarchar"
+														}
+													},
+													{
+														"source": {
+															"name": "EXPIRATIONDTM",
+															"type": "String",
+															"physicalType": "String"
+														},
+														"sink": {
+															"name": "EXPIRATIONDTM",
+															"type": "String",
+															"physicalType": "nvarchar"
+														}
+													},
+													{
+														"source": {
+															"name": "UPDATEDTM",
+															"type": "String",
+															"physicalType": "String"
+														},
+														"sink": {
+															"name": "UPDATEDTM",
+															"type": "String",
+															"physicalType": "nvarchar"
+														}
+													},
+													{
+														"source": {
+															"name": "REPORTTOORGID",
+															"type": "String",
+															"physicalType": "String"
+														},
+														"sink": {
+															"name": "REPORTTOORGID",
+															"type": "String",
+															"physicalType": "nvarchar"
+														}
+													},
+													{
+														"source": {
+															"name": "REPORT_TO_ORGDSC",
+															"type": "String",
+															"physicalType": "String"
+														},
+														"sink": {
+															"name": "REPORT_TO_ORGDSC",
+															"type": "String",
+															"physicalType": "nvarchar"
+														}
+													},
+													{
+														"source": {
+															"name": "REPORT_TO_ORGPATHTXT",
+															"type": "String",
+															"physicalType": "String"
+														},
+														"sink": {
+															"name": "REPORT_TO_ORGPATHTXT",
+															"type": "String",
+															"physicalType": "nvarchar"
+														}
+													}
+												],
+												"typeConversion": true,
+												"typeConversionSettings": {
+													"allowDataTruncation": true,
+													"treatBooleanAsNumber": false
+												}
+											}
+										},
+										"inputs": [
+											{
+												"referenceName": "ds_csvfile",
+												"type": "DatasetReference",
+												"parameters": {
+													"foldername": "@item().sourloca",
+													"filename": "@item().sFileName"
+												}
+											}
+										],
+										"outputs": [
+											{
+												"referenceName": "sqldestDB",
+												"type": "DatasetReference",
+												"parameters": {
+													"servername": {
+														"value": "@pipeline().globalParameters.servername",
+														"type": "Expression"
+													},
+													"dbname": {
+														"value": "@pipeline().globalParameters.databasename",
+														"type": "Expression"
+													},
+													"username": {
+														"value": "@pipeline().globalParameters.username",
+														"type": "Expression"
+													},
+													"password": {
+														"value": "@pipeline().globalParameters.password",
+														"type": "Expression"
+													},
+													"schema": "@item().schemaname",
+													"tablename": "@item().dtablename"
+												}
+											}
+										]
+									}
+								],
+								"ifTrueActivities": [
+									{
+										"name": "Copy data1",
+										"type": "Copy",
+										"dependsOn": [],
+										"policy": {
+											"timeout": "7.00:00:00",
+											"retry": 0,
+											"retryIntervalInSeconds": 30,
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"source": {
+												"type": "DelimitedTextSource",
+												"storeSettings": {
+													"type": "FileServerReadSettings",
+													"recursive": true,
+													"enablePartitionDiscovery": false
+												},
+												"formatSettings": {
+													"type": "DelimitedTextReadSettings"
+												}
+											},
+											"sink": {
+												"type": "AzureSqlSink"
+											},
+											"enableStaging": false,
+											"translator": {
+												"type": "TabularTranslator",
+												"mappings": [
+													{
+														"source": {
+															"name": "Delete",
+															"type": "String",
+															"physicalType": "String"
+														},
+														"sink": {
+															"name": "Delete",
+															"type": "String",
+															"physicalType": "varchar"
+														}
+													},
+													{
+														"source": {
+															"name": "INFTY",
+															"type": "String",
+															"physicalType": "String"
+														},
+														"sink": {
+															"name": "INFTY",
+															"type": "String",
+															"physicalType": "varchar"
+														}
+													},
+													{
+														"source": {
+															"name": "MANDT",
+															"type": "String",
+															"physicalType": "String"
+														},
+														"sink": {
+															"name": "MANDT",
+															"type": "String",
+															"physicalType": "varchar"
+														}
+													},
+													{
+														"source": {
+															"name": "PERNR",
+															"type": "String",
+															"physicalType": "String"
+														},
+														"sink": {
+															"name": "PERNR",
+															"type": "String",
+															"physicalType": "varchar"
+														}
+													},
+													{
+														"source": {
+															"name": "SUBTY",
+															"type": "String",
+															"physicalType": "String"
+														},
+														"sink": {
+															"name": "SUBTY",
+															"type": "String",
+															"physicalType": "varchar"
+														}
+													},
+													{
+														"source": {
+															"name": "OBJPS",
+															"type": "String",
+															"physicalType": "String"
+														},
+														"sink": {
+															"name": "OBJPS",
+															"type": "String",
+															"physicalType": "varchar"
+														}
+													},
+													{
+														"source": {
+															"name": "SPRPS",
+															"type": "String",
+															"physicalType": "String"
+														},
+														"sink": {
+															"name": "SPRPS",
+															"type": "String",
+															"physicalType": "varchar"
+														}
+													},
+													{
+														"source": {
+															"name": "ENDDA",
+															"type": "String",
+															"physicalType": "String"
+														},
+														"sink": {
+															"name": "ENDDA",
+															"type": "String",
+															"physicalType": "varchar"
+														}
+													},
+													{
+														"source": {
+															"name": "BEGDA",
+															"type": "String",
+															"physicalType": "String"
+														},
+														"sink": {
+															"name": "BEGDA",
+															"type": "String",
+															"physicalType": "varchar"
+														}
+													},
+													{
+														"source": {
+															"name": "SEQNR",
+															"type": "String",
+															"physicalType": "String"
+														},
+														"sink": {
+															"name": "SEQNR",
+															"type": "String",
+															"physicalType": "varchar"
+														}
+													},
+													{
+														"source": {
+															"name": "AEDTM",
+															"type": "String",
+															"physicalType": "String"
+														},
+														"sink": {
+															"name": "AEDTM",
+															"type": "String",
+															"physicalType": "varchar"
+														}
+													},
+													{
+														"source": {
+															"name": "HISTO",
+															"type": "String",
+															"physicalType": "String"
+														},
+														"sink": {
+															"name": "HISTO",
+															"type": "String",
+															"physicalType": "varchar"
+														}
+													},
+													{
+														"source": {
+															"name": "REFEX",
+															"type": "String",
+															"physicalType": "String"
+														},
+														"sink": {
+															"name": "REFEX",
+															"type": "String",
+															"physicalType": "varchar"
+														}
+													},
+													{
+														"source": {
+															"name": "BEGUZ",
+															"type": "String",
+															"physicalType": "String"
+														},
+														"sink": {
+															"name": "BEGUZ",
+															"type": "String",
+															"physicalType": "varchar"
+														}
+													},
+													{
+														"source": {
+															"name": "ENDUZ",
+															"type": "String",
+															"physicalType": "String"
+														},
+														"sink": {
+															"name": "ENDUZ",
+															"type": "String",
+															"physicalType": "varchar"
+														}
+													},
+													{
+														"source": {
+															"name": "STDAZ",
+															"type": "String",
+															"physicalType": "String"
+														},
+														"sink": {
+															"name": "STDAZ",
+															"type": "String",
+															"physicalType": "varchar"
+														}
+													},
+													{
+														"source": {
+															"name": "BWGRL",
+															"type": "String",
+															"physicalType": "String"
+														},
+														"sink": {
+															"name": "BWGRL",
+															"type": "String",
+															"physicalType": "varchar"
+														}
+													},
+													{
+														"source": {
+															"name": "TRFGR",
+															"type": "String",
+															"physicalType": "String"
+														},
+														"sink": {
+															"name": "TRFGR",
+															"type": "String",
+															"physicalType": "varchar"
+														}
+													},
+													{
+														"source": {
+															"name": "TRFST",
+															"type": "String",
+															"physicalType": "String"
+														},
+														"sink": {
+															"name": "TRFST",
+															"type": "String",
+															"physicalType": "varchar"
+														}
+													},
+													{
+														"source": {
+															"name": "KOSTL",
+															"type": "String",
+															"physicalType": "String"
+														},
+														"sink": {
+															"name": "KOSTL",
+															"type": "String",
+															"physicalType": "varchar"
+														}
+													},
+													{
+														"source": {
+															"name": "MAXBT",
+															"type": "String",
+															"physicalType": "String"
+														},
+														"sink": {
+															"name": "MAXBT",
+															"type": "String",
+															"physicalType": "varchar"
+														}
+													}
+												],
+												"typeConversion": true,
+												"typeConversionSettings": {
+													"allowDataTruncation": true,
+													"treatBooleanAsNumber": false
+												}
+											}
+										},
+										"inputs": [
+											{
+												"referenceName": "ds_csvfile",
+												"type": "DatasetReference",
+												"parameters": {
+													"foldername": "@item().sourloca",
+													"filename": "@item().sFileName"
+												}
+											}
+										],
+										"outputs": [
+											{
+												"referenceName": "sqldestDB",
+												"type": "DatasetReference",
+												"parameters": {
+													"servername": {
+														"value": "@pipeline().globalParameters.servername",
+														"type": "Expression"
+													},
+													"dbname": {
+														"value": "@pipeline().globalParameters.databasename",
+														"type": "Expression"
+													},
+													"username": {
+														"value": "@pipeline().globalParameters.username",
+														"type": "Expression"
+													},
+													"password": {
+														"value": "@pipeline().globalParameters.password",
+														"type": "Expression"
+													},
+													"schema": "@item().schemaname",
+													"tablename": "@item().dtablename"
+												}
+											}
+										]
+									}
+								]
+							}
+						}
+					]
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2021-08-12T09:30:22Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

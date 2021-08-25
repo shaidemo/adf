@@ -1,0 +1,29 @@
+{
+	"name": "shai-adf-dev",
+	"properties": {
+		"globalParameters": {
+			"servername": {
+				"type": "string",
+				"value": "az-dev-server.database.windows.net"
+			},
+			"databasename": {
+				"type": "string",
+				"value": "azdevsql"
+			},
+			"username": {
+				"type": "string",
+				"value": "shaisingh"
+			},
+			"password": {
+				"type": "string",
+				"value": "Bulsha@123"
+			}
+		}
+	},
+	"location": "australiaeast",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "f51bc4de-c3e3-4014-bef8-dfd66e12f038",
+		"tenantId": "0a3186bb-d977-4de2-af4a-4ddade89c443"
+	}
+}

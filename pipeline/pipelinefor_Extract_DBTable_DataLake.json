@@ -1,0 +1,157 @@
+{
+	"name": "pipelinefor_Extract_DBTable_DataLake",
+	"properties": {
+		"activities": [
+			{
+				"name": "Lookup_selectTables",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "select TABLE_SCHEMA, TABLE_NAME from [INFORMATION_SCHEMA].[TABLES] \nwhere TABLE_TYPE = 'BASE TABLE'\nAND TABLE_SCHEMA = 'SalesLT'",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "DBtoBlobMetadataRead",
+						"type": "DatasetReference",
+						"parameters": {
+							"servername": {
+								"value": "@pipeline().globalParameters.servername",
+								"type": "Expression"
+							},
+							"dbname": {
+								"value": "@pipeline().globalParameters.databasename",
+								"type": "Expression"
+							},
+							"userid": {
+								"value": "@pipeline().globalParameters.username",
+								"type": "Expression"
+							},
+							"password": {
+								"value": "@pipeline().globalParameters.password",
+								"type": "Expression"
+							}
+						}
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "ForEachTable",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Lookup_selectTables",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Lookup_selectTables').output.value",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "CopyData_ExtractTableintoBlob",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "AzureSqlSource",
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"sink": {
+									"type": "DelimitedTextSink",
+									"storeSettings": {
+										"type": "AzureBlobStorageWriteSettings"
+									},
+									"formatSettings": {
+										"type": "DelimitedTextWriteSettings",
+										"quoteAllText": true,
+										"fileExtension": ".txt"
+									}
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "SQLDB_SalestableList",
+									"type": "DatasetReference",
+									"parameters": {
+										"servername": {
+											"value": "@pipeline().globalParameters.servername",
+											"type": "Expression"
+										},
+										"dbname": {
+											"value": "@pipeline().globalParameters.databasename",
+											"type": "Expression"
+										},
+										"userid": {
+											"value": "@pipeline().globalParameters.username",
+											"type": "Expression"
+										},
+										"password": {
+											"value": "@pipeline().globalParameters.password",
+											"type": "Expression"
+										},
+										"schema": {
+											"value": "@item().TABLE_SCHEMA",
+											"type": "Expression"
+										},
+										"table": "@item().TABLE_NAME"
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "datalakestorage",
+									"type": "DatasetReference",
+									"parameters": {
+										"filename": {
+											"value": "@concat(item().TABLE_NAME,'.csv')",
+											"type": "Expression"
+										},
+										"dirname": "@item().TABLE_SCHEMA"
+									}
+								}
+							]
+						}
+					]
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2021-08-13T03:51:21Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
